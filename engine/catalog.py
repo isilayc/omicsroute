@@ -148,16 +148,16 @@ def build_workflow_context_index():
 
 def find_goal_contexts(
     sample_type,
-    goal_label
+    goal_label,
+    index=None,
 ):
     """
     Find all currently implemented workflows for
     one sample type + analysis goal.
     """
 
-    index = (
-        build_workflow_context_index()
-    )
+    if index is None:
+        index = build_workflow_context_index()
 
     matches = []
 
@@ -200,6 +200,8 @@ def get_catalog_status():
         load_analysis_catalog()
     )
 
+    # Parse/index workflows once per catalogue request, not once per goal.
+    index = build_workflow_context_index()
     result = []
 
     for (
@@ -235,7 +237,8 @@ def get_catalog_status():
             contexts = (
                 find_goal_contexts(
                     sample_type,
-                    goal_label
+                    goal_label,
+                    index=index,
                 )
             )
 

@@ -1,32 +1,48 @@
 const API_BASE =
-  process.env.NEXT_PUBLIC_OMICSROUTE_API_URL ||
+  process.env.NEXT_PUBLIC_OMICSROUTE_API_URL ??
   "http://127.0.0.1:8000";
 
 async function request(path, options = {}) {
-  const response = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
-  });
+  const { timeoutMs = 30000, ...fetchOptions } = options;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(`${API_BASE}${path}`, {
+      ...fetchOptions,
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+      },
+    });
 
-  const body = await response.json().catch(() => ({}));
+    const body = await response.json().catch(() => null);
 
-  if (!response.ok) {
-    const message =
-      body?.detail ||
-      body?.error ||
-      `Request failed with HTTP ${response.status}`;
+    if (!response.ok) {
+      const message =
+        body?.detail ||
+        body?.error ||
+        `Request failed with HTTP ${response.status}`;
 
-    throw new Error(
-      typeof message === "string"
-        ? message
-        : JSON.stringify(message)
-    );
+      throw new Error(
+        typeof message === "string"
+          ? message
+          : JSON.stringify(message)
+      );
+    }
+
+    if (body === null) {
+      throw new Error("The API returned an invalid response. Please retry.");
+    }
+    return body;
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw new Error("The request took too long. Please retry.");
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
   }
-
-  return body;
 }
 
 export const getHealth = () => request("/health");
@@ -67,6 +83,7 @@ export const inspectWorkflow = (payload) =>
 
 export const researchWorkflow = (payload) =>
   request("/v1/workflow-research", {
+    timeoutMs: 290000,
     method: "POST",
     body: JSON.stringify(payload),
   });
@@ -97,6 +114,7 @@ export const getReferenceGuidance = (goal, workflowId, scopeId) => {
 
 export const getToolEvidence = (toolName, operation) =>
   request("/v1/tool-evidence", {
+    timeoutMs: 290000,
     method: "POST",
     body: JSON.stringify({
       tool_name: toolName,
@@ -109,6 +127,7 @@ export const getBioTools = (toolName) =>
 
 export const researchAlternatives = (payload) =>
   request("/v1/discovery", {
+    timeoutMs: 290000,
     method: "POST",
     body: JSON.stringify(payload),
   });
@@ -117,5 +136,6 @@ export const getCoverage = (fullAudit = false) =>
   request(
     `/v1/catalog/coverage?validate_dependencies=${
       fullAudit ? "true" : "false"
-    }`
+    }`,
+    { timeoutMs: 290000 }
   );
