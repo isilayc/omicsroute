@@ -1,10 +1,11 @@
 # One Vercel project for OmicsRoute
 
-The Next.js frontend and FastAPI backend are separate Vercel Services in one
-deployment. Services is currently a Vercel beta feature. The project root must
+The Next.js frontend is exported as static files and deployed alongside the
+FastAPI backend in one standard Vercel FastAPI project. The project root must
 be the repository root, not `frontend`.
 
-- `/` and Next.js assets route to the static export in `frontend/out`.
+- `build_vercel.py` builds `frontend/out` and copies it to the root `public/`
+  directory. Vercel serves these files from its CDN; `/` maps to `/index.html`.
   The planner runs in the browser; its server requests go to FastAPI.
 - `/health`, `/v1/*`, `/docs`, `/openapi.json` and `/redoc` route to `api.main:app`.
 - Production browser requests use the current origin. A stale Render API URL
@@ -18,8 +19,8 @@ be the repository root, not `frontend`.
 
 1. In the existing Vercel project, Settings -> Build and Deployment, change
    Root Directory from `frontend` to the repository root (empty field / `.`).
-2. Remove old project-wide install/build/output overrides. Each service's
-   framework and build settings are supplied by the root `vercel.json`.
+2. Remove old project-wide install/build/output overrides. The FastAPI framework
+   and build command are supplied by the root `vercel.json`.
 3. Remove `NEXT_PUBLIC_OMICSROUTE_API_URL` pointing to Render from Production
    and Preview. It is no longer required. If external literature/reference API
    credentials were configured in Render, copy their values privately into
@@ -50,8 +51,7 @@ Live HTTP test (run from repository root):
 python tests/vercel_migration/test_http_flow.py https://YOUR-DEPLOYMENT.vercel.app
 ```
 
-Vercel CLI 63.1.0 recognizes both configured services. Local tests and Next.js
-build success do not prove cloud deployment success; the live checks above
+Local tests and Next.js build success do not prove cloud deployment success; the live checks above
 remain required. External literature providers may still be slow or rate-limit
 requests. Moving hosting does not remove those provider delays.
 
@@ -62,6 +62,5 @@ Restore the previous Render API URL environment variable if it was removed.
 Keep Render running until production acceptance is complete.
 
 References:
-- https://vercel.com/docs/services
-- https://vercel.com/docs/services/routing
+- https://nextjs.org/docs/app/guides/static-exports
 - https://vercel.com/docs/frameworks/backend/fastapi

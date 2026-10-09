@@ -24,4 +24,5 @@ data/constraints.backup_before_coverage_v1_20260910_162154.yaml
 frontend/node_modules/
 frontend/.next/
 frontend/out/
+/public/
 .vercel/

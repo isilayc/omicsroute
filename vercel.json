@@ -1,31 +1,17 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "services": {
-    "web": {
-      "root": "frontend",
-      "framework": "nextjs",
-      "installCommand": "npm ci",
-      "buildCommand": "npm run build"
-    },
-    "backend": {
-      "root": ".",
-      "framework": "fastapi",
-      "entrypoint": "api.main:app",
-      "functions": {
-        "api/main.py": {
-          "maxDuration": 300,
-          "excludeFiles": "{frontend/**,tests/**,audit/**,backups/**,.venv/**,.git/**,app.py,*.md}"
-        }
-      }
+  "framework": "fastapi",
+  "buildCommand": "python build_vercel.py",
+  "functions": {
+    "api/main.py": {
+      "maxDuration": 300,
+      "excludeFiles": "{frontend/**,tests/**,audit/**,backups/**,.venv/**,.git/**,app.py,*.md}"
     }
   },
   "rewrites": [
-    { "source": "/health", "destination": { "service": "backend" } },
-    { "source": "/v1/:path*", "destination": { "service": "backend" } },
-    { "source": "/docs", "destination": { "service": "backend" } },
-    { "source": "/docs/:path*", "destination": { "service": "backend" } },
-    { "source": "/openapi.json", "destination": { "service": "backend" } },
-    { "source": "/redoc", "destination": { "service": "backend" } },
-    { "source": "/:path*", "destination": { "service": "web" } }
+    {
+      "source": "/",
+      "destination": "/index.html"
+    }
   ]
 }
