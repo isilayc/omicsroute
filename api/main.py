@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from functools import lru_cache
 import os
+from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from engine.catalog import get_global_coverage
@@ -721,7 +723,7 @@ def _cached_accession(accession: str):
     return lookup_assembly_accession(accession)
 
 
-@app.get("/")
+@app.get("/v1")
 def root():
     return {
         "service": "OmicsRoute API",
@@ -1094,3 +1096,10 @@ def catalog_coverage(
         "families": families,
         "dependency_audit": True,
     }
+
+
+# Register last so API endpoints retain precedence. Vercel promotes these
+# generated files to its CDN; API-only development needs no frontend build.
+_planner_static = Path(__file__).resolve().parents[1] / "web_static"
+if _planner_static.is_dir():
+    app.mount("/", StaticFiles(directory=str(_planner_static), html=True), name="planner")

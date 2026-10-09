@@ -5,13 +5,25 @@ Live:  python tests/vercel_migration/test_http_flow.py https://omicsroute.vercel
 Local mode needs httpx in addition to the API dependencies.
 """
 import sys
+import re
 from pathlib import Path
 from time import perf_counter
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 
-def verify(client):
+def verify(client, check_frontend=False):
+    if check_frontend:
+        page = client.get("/")
+        assert page.status_code == 200
+        assert "text/html" in page.headers.get("content-type", "")
+        assert "OmicsRoute" in page.text
+        assets = set(re.findall(r'(?:src|href)="(/_next/[^\"]+)"', page.text))
+        assert assets, "Planner must load its generated JavaScript/CSS assets"
+        for asset in assets:
+            assert client.get(asset).status_code == 200, asset
+        print("PASS planner HTML and generated JavaScript/CSS assets")
+
     def request(method, path, **kwargs):
         started = perf_counter()
         response = client.request(method, path, **kwargs)
@@ -54,9 +66,9 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         import httpx
         with httpx.Client(base_url=sys.argv[1].rstrip("/"), timeout=60) as client:
-            verify(client)
+            verify(client, check_frontend=True)
     else:
         from fastapi.testclient import TestClient
         from api.main import app
         with TestClient(app) as client:
-            verify(client)
+            verify(client, check_frontend=(Path(__file__).resolve().parents[2] / "web_static").is_dir())

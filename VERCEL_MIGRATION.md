@@ -4,8 +4,9 @@ The Next.js frontend is exported as static files and deployed alongside the
 FastAPI backend in one standard Vercel FastAPI project. The project root must
 be the repository root, not `frontend`.
 
-- `build_vercel.py` builds `frontend/out` and copies it to the root `public/`
-  directory. Vercel serves these files from its CDN; `/` maps to `/index.html`.
+- `build_vercel.py` builds `frontend/out` and copies it to the root `web_static/`
+  directory, mounted after all API routes. Vercel promotes this mount to its
+  CDN, including the index document for `/`.
   The planner runs in the browser; its server requests go to FastAPI.
 - `/health`, `/v1/*`, `/docs`, `/openapi.json` and `/redoc` route to `api.main:app`.
 - Production browser requests use the current origin. A stale Render API URL

@@ -15,8 +15,8 @@ def main():
     output = frontend / "out"
     if not (output / "index.html").is_file():
         raise RuntimeError("Next.js did not produce the planner's index.html")
-    shutil.copytree(output, root / "public", dirs_exist_ok=True)
-    print("Planner assets copied to public/ for Vercel CDN")
+    shutil.copytree(output, root / "web_static", dirs_exist_ok=True)
+    print("Planner assets copied to web_static/ for FastAPI CDN promotion")
 
 
 if __name__ == "__main__":

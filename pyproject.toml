@@ -11,3 +11,6 @@ dependencies = [
 
 [tool.vercel]
 entrypoint = "api.main:app"
+
+[tool.vercel.fastapi.static]
+exclude = true

@@ -7,11 +7,5 @@
       "maxDuration": 300,
       "excludeFiles": "{frontend/**,tests/**,audit/**,backups/**,.venv/**,.git/**,app.py,*.md}"
     }
-  },
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "/index.html"
-    }
-  ]
+  }
 }
