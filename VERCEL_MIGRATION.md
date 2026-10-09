@@ -4,7 +4,8 @@ The Next.js frontend and FastAPI backend are separate Vercel Services in one
 deployment. Services is currently a Vercel beta feature. The project root must
 be the repository root, not `frontend`.
 
-- `/` and Next.js assets route to `frontend`.
+- `/` and Next.js assets route to the static export in `frontend/out`.
+  The planner runs in the browser; its server requests go to FastAPI.
 - `/health`, `/v1/*`, `/docs`, `/openapi.json` and `/redoc` route to `api.main:app`.
 - Production browser requests use the current origin. A stale Render API URL
   in the dashboard is overridden by `frontend/next.config.mjs`.

@@ -5,7 +5,8 @@
       "root": "frontend",
       "framework": "nextjs",
       "installCommand": "npm ci",
-      "buildCommand": "npm run build"
+      "buildCommand": "npm run build",
+      "outputDirectory": "out"
     },
     "backend": {
       "root": ".",
