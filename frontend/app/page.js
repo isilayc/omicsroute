@@ -6,7 +6,6 @@ import {
   getCoverage,
   getDataStates,
   getGoals,
-  getHealth,
   getReadTypes,
   getReferenceContext,
   getReferenceGuidance,
@@ -1791,7 +1790,12 @@ function CoveragePanel({ coverage, loading, onAudit }) {
 
       <div className="top-details-body">
         {!coverage ? (
-          <div className="notice info">Coverage data is loading...</div>
+          <div className="notice info">
+            Catalogue audits run on request and do not delay workflow planning.
+            <button className="secondary-button" type="button" onClick={onAudit} disabled={loading}>
+              {loading ? "Running dependency audit..." : "Run catalogue audit"}
+            </button>
+          </div>
         ) : (
           <>
             <div className="evidence-metrics">
@@ -1985,18 +1989,15 @@ export default function HomePage() {
   const isRawReads = dataState === RAW_READS;
 
   useEffect(() => {
+    let active = true;
     async function bootstrap() {
       try {
-        await getHealth();
-        const [samples, coveragePayload] = await Promise.all([
-          getSampleTypes(),
-          getCoverage(false),
-        ]);
-
+        const samples = await getSampleTypes();
+        if (!active) return;
         setSampleTypes(samples.sample_types || []);
-        setCoverage(coveragePayload);
         setApiState("online");
       } catch (err) {
+        if (!active) return;
         setApiState("offline");
         setGlobalError(err.message);
       }
@@ -2022,6 +2023,7 @@ export default function HomePage() {
             : current.cpu_cores,
       }));
     }
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
